@@ -128,17 +128,17 @@ async function pool(items, limit, worker) {
   return results;
 }
 
-async function ensureBranchExists() {
+async function ensureBranchExists(seedFile) {
   const refPath = `/repos/${owner}/${repo}/git/ref/heads/${branch}`;
   let ref = await ghMaybe(refPath);
   if (ref) return ref.object.sha;
 
-  const readmeContent = Buffer.from(`# ${repo}\n`).toString('base64');
-  await gh(`/repos/${owner}/${repo}/contents/README.md`, {
+  const seedContent = readFileSync(seedFile.path).toString('base64');
+  await gh(`/repos/${owner}/${repo}/contents/${seedFile.path}`, {
     method: 'PUT',
     body: JSON.stringify({
-      message: 'Initial README',
-      content: readmeContent,
+      message,
+      content: seedContent,
       branch,
     }),
   });
@@ -150,7 +150,7 @@ async function ensureBranchExists() {
 const files = trackedFiles();
 console.log(`Uploading ${files.length} tracked files to ${owner}/${repo}:${branch}...`);
 
-const headSha = await ensureBranchExists();
+const headSha = await ensureBranchExists(files[0]);
 const headCommit = await gh(`/repos/${owner}/${repo}/git/commits/${headSha}`);
 
 const tree = await pool(files, 8, async (file, index) => {
