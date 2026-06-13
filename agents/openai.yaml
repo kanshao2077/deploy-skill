@@ -1,0 +1,4 @@
+interface:
+  display_name: "部署"
+  short_description: "部署 Coze/Vite 前端到 GitHub Pages"
+  default_prompt: "Use $deploy to upload a Coze/Vite source package to GitHub and deploy it on GitHub Pages."
